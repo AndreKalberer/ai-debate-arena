@@ -1,4 +1,7 @@
 import { useState, useEffect, useRef } from "react";
+
+// Must be HTTPS in production — set VITE_API_BASE_URL in your .env
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5050";
 import type {
   ModelKey,
   Message,
@@ -178,8 +181,6 @@ export default function App() {
         finalAffModel,
         finalNegModel,
       });
-      const API_BASE =
-        import.meta.env.VITE_API_BASE_URL || "http://localhost:5050";
 
       // Add abort controller with timeout
       const abortController = new AbortController();
@@ -361,8 +362,6 @@ export default function App() {
   const runDiscussionMode = async (userTopic: string) => {
     try {
       console.log("💭 Starting discussion mode");
-      const API_BASE =
-        import.meta.env.VITE_API_BASE_URL || "http://localhost:5050";
 
       // Add abort controller with timeout
       const abortController = new AbortController();

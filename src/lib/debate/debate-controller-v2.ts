@@ -3,6 +3,7 @@ import { askClaude, askClaudeStream } from "../ai/anthropic.js";
 import { askGemini, askGeminiStream } from "../ai/gemini.js";
 import { runJudges } from "./judging.js";
 import type { ModelKey, JudgeVerdict } from "./judging.types.js";
+import { sanitizeTopic } from "./sanitize.js";
 
 type Message = {
   role: "affirmative" | "negative" | "moderator";
@@ -44,9 +45,9 @@ export async function runDebateWithModelsV2(
   onProgress?: ProgressCallback,
 ): Promise<DebateResultV2> {
   const messages: Message[] = [];
+  topic = sanitizeTopic(topic);
 
-  console.log("Starting multi-round debate:", topic);
-  console.log("Rounds:", rounds);
+  console.log(`Starting multi-round debate — rounds:${rounds}`);
   onProgress?.("Starting debate", { topic, rounds });
 
   // Round 1: Affirmative Opening
@@ -57,7 +58,7 @@ export async function runDebateWithModelsV2(
   let affOpening = "";
   let msgIndex = messages.length;
   for await (const chunk of MODEL_MAP_STREAM[affirmativeModel](
-    `You are debating the affirmative side of: "${topic}"
+    `You are debating the affirmative side of: <topic>${topic}</topic>
 
 Write a brief opening statement (100-150 words) presenting your 2-3 strongest arguments.
 Be clear and persuasive.`,
@@ -79,7 +80,7 @@ Be clear and persuasive.`,
   let negOpening = "";
   msgIndex = messages.length;
   for await (const chunk of MODEL_MAP_STREAM[negativeModel](
-    `You are debating the negative side of: "${topic}"
+    `You are debating the negative side of: <topic>${topic}</topic>
 
 The affirmative just said:
 "${affOpening}"
@@ -135,7 +136,7 @@ If the argument is sound, respond with "OK"`;
     let affRebuttal = "";
     msgIndex = messages.length;
     for await (const chunk of MODEL_MAP_STREAM[affirmativeModel](
-      `You are debating the affirmative side of: "${topic}"
+      `You are debating the affirmative side of: <topic>${topic}</topic>
 
 The negative just argued:
 "${lastNeg.text}"
@@ -180,7 +181,7 @@ Write a quick rebuttal (75-100 words). Address their key point and strengthen yo
     let negRebuttal = "";
     msgIndex = messages.length;
     for await (const chunk of MODEL_MAP_STREAM[negativeModel](
-      `You are debating the negative side of: "${topic}"
+      `You are debating the negative side of: <topic>${topic}</topic>
 
 The affirmative just argued:
 "${lastAff.text}"
@@ -222,7 +223,7 @@ Write a quick rebuttal (75-100 words). Address their key point and strengthen yo
   let affClosing = "";
   msgIndex = messages.length;
   for await (const chunk of MODEL_MAP_STREAM[affirmativeModel](
-    `You are debating the affirmative side of: "${topic}"
+    `You are debating the affirmative side of: <topic>${topic}</topic>
 
 Final statement in 75-100 words: summarize your strongest point and why you win.`,
   )) {
@@ -243,7 +244,7 @@ Final statement in 75-100 words: summarize your strongest point and why you win.
   let negClosing = "";
   msgIndex = messages.length;
   for await (const chunk of MODEL_MAP_STREAM[negativeModel](
-    `You are debating the negative side of: "${topic}"
+    `You are debating the negative side of: <topic>${topic}</topic>
 
 Final statement in 75-100 words: summarize your strongest point and why you win.`,
   )) {
@@ -270,7 +271,7 @@ Final statement in 75-100 words: summarize your strongest point and why you win.
     let moderatorSummary = "";
     msgIndex = messages.length;
     for await (const chunk of askClaudeStream(
-      `You are a neutral debate moderator analyzing this debate on: "${topic}"
+      `You are a neutral debate moderator analyzing this debate on: <topic>${topic}</topic>
 
 Full transcript:
 ${fullTranscript}

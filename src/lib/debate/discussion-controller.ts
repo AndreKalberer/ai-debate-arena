@@ -3,6 +3,7 @@ import { askClaude, askClaudeStream } from "../ai/anthropic.js";
 import { askGemini, askGeminiStream } from "../ai/gemini.js";
 import { runJudges } from "./judging.js";
 import type { ModelKey, JudgeVerdict } from "./judging.types.js";
+import { sanitizeTopic } from "./sanitize.js";
 
 type DiscussionMessage = {
   model: "openai" | "anthropic" | "gemini";
@@ -106,8 +107,9 @@ export async function runDiscussion(
   const MESSAGES_PER_MODEL = 5;
   let consensusReached = false;
   let consensusText: string | null = null;
+  topic = sanitizeTopic(topic);
 
-  console.log("Starting 3-way AI discussion:", topic);
+  console.log("Starting 3-way AI discussion");
   onProgress?.("Starting discussion", { topic });
 
   // Round-robin discussion: openai -> anthropic -> gemini -> repeat
@@ -140,7 +142,7 @@ export async function runDiscussion(
       // First message - OpenAI starts
       prompt = `You are ${MODEL_NAMES[currentModel]} participating in a collaborative discussion with Claude 4.5 Sonnet and Gemini 2.5.
 
-Topic: "${topic}"
+Topic: <topic>${topic}</topic>
 
 Provide your initial answer or perspective on this topic in 100-150 words. Be clear and thoughtful.`;
     } else {
@@ -148,7 +150,7 @@ Provide your initial answer or perspective on this topic in 100-150 words. Be cl
       const context = buildContext(messages);
       prompt = `You are ${MODEL_NAMES[currentModel]} participating in a collaborative discussion with other AI models.
 
-Topic: "${topic}"
+Topic: <topic>${topic}</topic>
 
 Discussion so far:
 ${context}
@@ -197,7 +199,7 @@ Respond to the discussion above (100-150 words). If you agree with the previous 
         let consensusSummary = "";
         const summaryMsgIndex = messages.length;
         for await (const chunk of askClaudeStream(
-          `The following AI models have reached consensus on the topic: "${topic}"
+          `The following AI models have reached consensus on the topic: <topic>${topic}</topic>
 
 Final statements:
 ${buildContext(lastThreeMessages)}
@@ -238,7 +240,7 @@ Provide a brief summary (50-100 words) of the consensus position they've agreed 
       .join("\n\n");
 
     // Create a combined prompt for judges
-    const judgePrompt = `You are judging a discussion between three AI models on: "${topic}"
+    const judgePrompt = `You are judging a discussion between three AI models on: <topic>${topic}</topic>
 
 ChatGPT-5 perspective:
 ---

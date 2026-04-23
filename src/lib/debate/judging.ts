@@ -3,9 +3,10 @@ import type { JudgeVerdict } from "./judging.types.js";
 import { askOpenAI } from "../ai/openai.js";
 import { askClaude } from "../ai/anthropic.js";
 import { askGemini } from "../ai/gemini.js";
+import { sanitizeTopic } from "./sanitize.js";
 
 const JUDGE_PROMPT = (topic: string, aff: string, neg: string): string => `You are a debate judge.
-Resolution: ${topic}
+Resolution: <topic>${sanitizeTopic(topic)}</topic>
 
 Affirmative:
 ---

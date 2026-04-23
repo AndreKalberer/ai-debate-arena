@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react'
+
+// Must be HTTPS in production — set VITE_API_BASE_URL in your .env
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5050'
 import type { ModelKey, Message, DiscussionMessage, DebateResultV2, DiscussionResult, Mode, SavedDebate, MessageReactions } from './types'
 import { saveDebate, getTheme, setTheme as saveTheme, getSavedDebates } from './utils'
 import HistorySidebar from './components/HistorySidebar'
@@ -126,8 +129,7 @@ export default function App() {
     try {
       // First make POST request to initiate the debate
       console.log('Sending debate request', { finalAffModel, finalNegModel })
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5050'
-      const response = await fetch(`${API_BASE}/run-debate-stream`, {
+const response = await fetch(`${API_BASE}/run-debate-stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -233,8 +235,7 @@ export default function App() {
 
   const runDiscussionMode = async (userTopic: string) => {
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5050'
-      const response = await fetch(`${API_BASE}/run-discussion-stream`, {
+const response = await fetch(`${API_BASE}/run-discussion-stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ topic: userTopic }),

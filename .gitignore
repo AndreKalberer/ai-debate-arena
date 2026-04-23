@@ -1,21 +1,16 @@
-<<<<<<< HEAD
-﻿# Dependencies
 node_modules/
 debate-ui/node_modules/
-
-# Build output
 dist/
+dist-ssr/
 debate-ui/dist/
+*.local
 
-# Env files
+# Env files — never commit real secrets
 .env
+.env.*
 debate-ui/.env
+debate-ui/.env.*
 
-# IDE / OS files
-.vscode/
-.DS_Store
-Thumbs.db
-=======
 # Logs
 logs
 *.log
@@ -25,20 +20,17 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
+# Editor / OS
 .vscode/*
 !.vscode/extensions.json
 .idea
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
->>>>>>> f4ae72d1ee69cf46e81e602fd948f63b6cbdb255
+
+# Deploy
 .vercel
