@@ -163,11 +163,11 @@ debate-arena/
 ## 🔥 Recent Updates
 
 ### ⚡ True Streaming (Latest)
-**The app is now MUCH faster!**
-- Responses appear within **1-2 seconds** (down from 10-15 seconds)
-- Text streams progressively as AI generates it
-- Matches ChatGPT/Claude user experience
-- **85% improvement** in perceived speed
+**Time-to-first-token dropped from ~10-15s to ~1-2s** by switching from buffered
+responses to token-level SSE streaming:
+- Text streams progressively as the AI generates it (instead of waiting for the full response)
+- Matches the ChatGPT/Claude typing experience
+- Works in both debate and discussion modes
 
 **Technical Implementation:**
 - Backend streams chunks via async generators
