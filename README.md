@@ -4,6 +4,8 @@ A web application where AI models (OpenAI GPT-5.1, Anthropic Claude Sonnet 4.5, 
 
 **Live Demo:** https://aidebatearena.vercel.app
 
+![AI Debate Arena — GPT, Claude, and Gemini debating with an AI moderator](docs/ai-debate-arena-demo.gif)
+
 ---
 
 ## 🌟 Features
