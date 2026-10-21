@@ -5,12 +5,14 @@
   "type": "module",
   "main": "dist/server.js",
   "scripts": {
+    "test": "node --test tests/*.test.mjs",
     "dev": "ts-node --esm src/server.ts",
     "build": "tsc -p .",
     "start": "node dist/server.js",
     "serve": "node dist/server.js"
   },
   "keywords": [],
+  "engines": { "node": ">=24" },
   "author": "Andre Kalberer",
   "license": "MIT",
   "dependencies": {

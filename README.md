@@ -1,295 +1,114 @@
-# 🎭 AI Debate Arena
+# AI Debate Arena
 
-A web application where AI models (OpenAI GPT-5.1, Anthropic Claude Sonnet 4.5, and Google Gemini 3) engage in structured debates and collaborative discussions.
+[![CI](https://github.com/AndreKalberer/ai-debate-arena/actions/workflows/ci.yml/badge.svg)](https://github.com/AndreKalberer/ai-debate-arena/actions/workflows/ci.yml)
 
-**Live Demo:** https://aidebatearena.vercel.app
+A full-stack application where OpenAI, Claude, and Gemini debate opposing positions or discuss a topic together. Responses stream into a React interface as they are generated.
 
-![AI Debate Arena — GPT, Claude, and Gemini debating with an AI moderator](docs/ai-debate-arena-demo.gif)
+**[Live demo](https://aidebatearena.vercel.app)** · [Engineering notes](docs/engineering.md)
 
----
+![AI Debate Arena streaming a multi-model debate](docs/ai-debate-arena-demo.gif)
 
-## 🌟 Features
+## Features
 
-### Debate Mode
-- **AI vs AI Debates** - Watch different AI models argue opposing sides
-- **Multi-Round Structure** - Opening statements, rebuttals, and closing arguments
-- **AI Moderator** - Claude monitors debates for logical fallacies and bias
-- **Judge Panel** - Three AI judges independently evaluate and vote on winners
-- **Real-Time Streaming** ⚡ - See responses as they generate (1-2 seconds instead of 10+)
+- **Debates:** opening statements, configurable rebuttal rounds, closing statements, moderator analysis, and three judge verdicts.
+- **Discussions:** three models take turns, with heuristic consensus detection and judge voting when no consensus is found.
+- **Streaming:** Express sends SSE events for response chunks, completed messages, progress, and results.
+- **History:** the browser retains the latest 50 conversations, model win/loss/tie statistics, and Markdown exports.
+- **Interface:** responsive layouts, light/dark themes, topic browsing, and optional Firebase sign-in.
 
-### Discussion Mode
-- **3-Way Collaboration** - GPT, Claude, and Gemini discuss topics together
-- **Consensus Detection** - Automatically identifies when all models agree
-- **Judge Resolution** - If no consensus, judges vote on the best perspective
-- **Progressive Rendering** - Watch the conversation unfold in real-time
+## Architecture
 
-### User Experience
-- **True Streaming** ⚡ NEW! - Responses appear immediately as AI generates them
-- **Mobile Responsive** - Optimized for all screen sizes
-- **Dark/Light Themes** - Toggle between comfortable viewing modes
-- **Debate History** - Save and revisit past debates
-- **Firebase Authentication** - Google sign-in and email/password support
+The frontend uses **React, TypeScript, Vite, and Tailwind CSS**. The backend uses **Node.js, Express, and TypeScript**, with separate OpenAI, Anthropic, and Google adapters.
 
----
+- **SSE for one-way updates:** forward provider chunks without waiting for a full response. Message indices associate chunks with the correct response.
+- **Provider adapters:** isolate SDK response formats while controllers manage prompts and turn order.
+- **Browser-local history:** use localStorage without a database. Firebase provides optional sign-in; saved conversations do not synchronize across devices.
+- **Independent hosting:** Vercel serves the frontend; Render hosts Express. A build-time backend URL connects them.
 
-## 🚀 Tech Stack
+See [engineering notes](docs/engineering.md) for the event protocol, tradeoffs, and latency measurement procedure.
 
-### Frontend
-- **React** with TypeScript
-- **Vite** for blazing-fast dev and build
-- **Tailwind CSS** for styling
-- **Firebase** for authentication
-- **SSE (Server-Sent Events)** for real-time streaming
+## Run locally
 
-### Backend
-- **Node.js** with Express
-- **TypeScript** for type safety
-- **OpenAI API** (GPT-5.1)
-- **Anthropic API** (Claude Sonnet 4.5)
-- **Google Generative AI** (Gemini 3)
-- **SSE Streaming** for real-time updates
+Use **Node.js 24 or later** and npm. Real debates require your provider API keys and may incur provider charges.
 
-### Deployment
-- **Frontend:** Vercel
-- **Backend:** Render
-- **CI/CD:** Auto-deploy on push to main
-
----
-
-## 📦 Installation
-
-### Prerequisites
-- Node.js 18+ installed
-- API keys for OpenAI, Anthropic, and Google AI
-- Firebase project (for authentication)
-
-### Clone Repository
-```bash
-git clone https://github.com/yourusername/debate-arena.git
-cd debate-arena
+```sh
+git clone https://github.com/AndreKalberer/ai-debate-arena.git
+cd ai-debate-arena
+npm ci
+npm ci --prefix debate-ui
 ```
 
-### Backend Setup
-```bash
-# Install dependencies
-npm install
+Copy the backend example to `.env` and the frontend example to `debate-ui/.env.local`.
 
-# Create .env file
+macOS/Linux:
+
+```sh
 cp .env.example .env
-
-# Add your API keys to .env
-OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-...
-GOOGLE_API_KEY=AI...
-PORT=5050
+cp debate-ui/.env.example debate-ui/.env.local
 ```
 
-### Frontend Setup
-```bash
-cd debate-ui
-npm install
+Windows PowerShell:
 
-# Create .env file
-echo "VITE_API_BASE_URL=http://localhost:5050" > .env
-
-# Add Firebase config to src/firebase.ts
+```powershell
+Copy-Item .env.example .env
+Copy-Item debate-ui/.env.example debate-ui/.env.local
 ```
 
----
+Fill in `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, and `GOOGLE_API_KEY` in the root `.env`. The backend validates all three at startup. Set `VITE_API_BASE_URL=http://localhost:5050` in `debate-ui/.env.local`; configure the optional Firebase values there to enable sign-in.
 
-## 🎮 Usage
+Build and start the backend:
 
-### Start Development Servers
-
-**Quick Start (Windows):**
-```bash
-start.bat
-```
-
-**Manual Start:**
-```bash
-# Terminal 1: Backend
-npm run dev
-
-# Terminal 2: Frontend
-cd debate-ui
-npm run dev
-```
-
-Open http://localhost:5173
-
-### Run a Debate
-1. Enter a debate topic (e.g., "AI will replace human jobs")
-2. Select models for affirmative and negative sides
-3. Click "Start Debate"
-4. Watch as responses stream in real-time! ⚡
-
-### Run a Discussion
-1. Switch to "Discussion" mode
-2. Enter a topic (e.g., "What is consciousness?")
-3. Click "Start Discussion"
-4. Watch three AIs collaborate to find consensus
-
----
-
-## 🏗️ Project Structure
-
-```
-debate-arena/
-├── src/                          # Backend source
-│   ├── lib/
-│   │   ├── ai/                   # AI provider integrations
-│   │   │   ├── openai.ts        # OpenAI + streaming
-│   │   │   ├── anthropic.ts     # Claude + streaming
-│   │   │   └── gemini.ts        # Gemini + streaming
-│   │   ├── debate/               # Core debate logic
-│   │   │   ├── debate-controller-v2.ts
-│   │   │   ├── discussion-controller.ts
-│   │   │   └── judging.ts
-│   │   └── config/               # Configuration
-│   └── server.ts                 # Express server with SSE
-├── debate-ui/                    # Frontend
-│   ├── src/
-│   │   ├── components/          # React components
-│   │   ├── auth/                # Firebase authentication
-│   │   ├── App.tsx              # Main app with streaming
-│   │   └── types.ts             # TypeScript types
-│   └── public/                   # Static assets
-├── STREAMING_IMPLEMENTATION.md   # Technical docs
-├── TEST_STREAMING.md            # Testing guide
-└── DEPLOY_NOW.md                # Deployment guide
-```
-
----
-
-## 🔥 Recent Updates
-
-### ⚡ True Streaming (Latest)
-**Time-to-first-token dropped from ~10-15s to ~1-2s** by switching from buffered
-responses to token-level SSE streaming:
-- Text streams progressively as the AI generates it (instead of waiting for the full response)
-- Matches the ChatGPT/Claude typing experience
-- Works in both debate and discussion modes
-
-**Technical Implementation:**
-- Backend streams chunks via async generators
-- SSE sends chunk events in real-time
-- Frontend appends chunks immediately
-- Works in both debate and discussion modes
-
-See `STREAMING_IMPLEMENTATION.md` for technical details.
-
----
-
-## 🚢 Deployment
-
-### Production Deployment
-
-**Backend (Render):**
-1. Connect GitHub repo to Render
-2. Set environment variables (API keys)
-3. Auto-deploys on push to main
-
-**Frontend (Vercel):**
-1. Connect GitHub repo to Vercel
-2. Set root directory to `debate-ui`
-3. Set `VITE_API_BASE_URL` environment variable
-4. Auto-deploys on push to main
-
-### Manual Deployment
-```bash
-# Build backend
+```sh
 npm run build
-
-# Build frontend
-cd debate-ui
-npm run build
-
-# Deploy dist folders to your hosting service
+npm start
 ```
 
----
+In a second terminal, from the repository root:
 
-## 🧪 Testing
-
-### Local Testing
-```bash
-# Run the quick start script
-start.bat
-
-# Or test builds
-npm run build
-cd debate-ui && npm run build
+```sh
+npm run dev --prefix debate-ui
 ```
 
-### Streaming Feature Test
-See `TEST_STREAMING.md` for comprehensive testing guide.
+Open the URL printed by Vite (normally `http://localhost:5173`). After backend edits, rebuild and restart it.
 
-**Quick test:**
-1. Start a debate
-2. Watch for text appearing within 1-2 seconds
-3. Verify progressive streaming (not all-at-once)
-4. Check console for errors (should be none)
+## Verify changes
 
----
+```sh
+npm test
+npm run build
+npm run build --prefix debate-ui
+```
 
-## 🐛 Troubleshooting
+GitHub Actions runs these checks on pushes and pull requests using Node.js 24 and the committed lockfiles.
 
-### Common Issues
+Tests exercise real saved-history, statistics, and Markdown-export logic with in-memory browser storage. They cover history eviction, deletion, malformed JSON recovery, majority/tied votes, self-debate exclusion, and discussion exports.
 
-**"No response from AI"**
-- Check API keys in `.env` file
-- Verify API credits/quota
-- Check console for specific error messages
+Tests require **no API keys and make no AI requests**. They do not verify live providers, streaming, sign-in, or deployed services. The scripts in `src/tests/` remain separate manual provider checks.
 
-**"Streaming not working"**
-- Clear browser cache
-- Check Network tab for SSE connection
-- Verify `VITE_API_BASE_URL` is set correctly
+## Project layout
 
-**"Build errors"**
-- Delete `node_modules` and run `npm install` again
-- Ensure Node.js version is 18+
-- Check for TypeScript errors with `npm run build`
+```text
+debate-ui/src/          Active React frontend and browser storage logic
+src/server.ts          Express JSON and SSE routes
+src/lib/ai/            Provider adapters
+src/lib/debate/        Debate/discussion controllers and judging
+src/lib/config/env.ts  Backend environment validation
+tests/                 Credential-free regression tests
+docs/                  Demo and engineering notes
+```
 
----
+Similarly named UI files under the root `src/` are retained from earlier development; the active frontend is `debate-ui/`.
 
-## 🤝 Contributing
+## Deployment
 
-Contributions welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+- **Backend:** build with `npm ci && npm run build`, start with `npm start`, and configure the three provider keys.
+- **Frontend:** use `debate-ui` as the project root, build with `npm run build`, and publish `dist/`. Set `VITE_API_BASE_URL` before building.
+- Configure frontend Firebase values if sign-in is enabled.
 
----
+## Current limitations
 
-## 📄 License
+Consensus uses keyword matching, and judge verdicts are model opinions. Provider availability and latency vary. History is browser-local and can be removed when browser data is cleared. The checked-in backend does not verify Firebase tokens on its debate routes.
 
-MIT License - feel free to use this project for learning or commercial purposes.
+## License
 
----
-
-## 🙏 Acknowledgments
-
-- **OpenAI** for GPT-5.1 API
-- **Anthropic** for Claude API
-- **Google** for Gemini API
-- **Vercel** for frontend hosting
-- **Render** for backend hosting
-
----
-
-## 📞 Support
-
-For issues or questions:
-- Open a GitHub issue
-- Check existing documentation
-- Review `STREAMING_IMPLEMENTATION.md` for technical details
-
----
-
-**Built with ❤️ using React, TypeScript, and the power of AI**
-
-🚀 **Try it live:** https://aidebatearena.vercel.app
+[MIT](LICENSE).
